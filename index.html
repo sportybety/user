@@ -6,57 +6,95 @@
     <title>Triple D Outfits</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* Styles za muonekano kama Alibaba */
-        body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
+        body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; padding-bottom: 70px; }
         .header { background: #ff4400; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
-        .search-box { padding: 10px; background: white; }
-        .search-box input { width: 90%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; }
+        .search-box { padding: 10px; background: white; text-align: center; }
+        .search-box input { width: 90%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; outline: none; }
         .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
         .p-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .p-card img { width: 100%; height: 150px; object-fit: cover; }
+        .p-card img { width: 100%; height: auto; display: block; }
         .p-details { padding: 10px; }
-        .admin-btn { background: #333; color: white; padding: 10px; border: none; width: 100%; cursor: pointer; }
-        #admin-panel { display: none; padding: 20px; background: white; border: 2px solid #ff4400; margin: 10px; border-radius: 10px; }
+        .p-price { color: #ff4400; font-weight: bold; font-size: 16px; }
+        .admin-panel { display: none; padding: 15px; background: white; margin: 10px; border-radius: 10px; border: 2px solid #ff4400; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #ddd; }
+        #cart-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; overflow-y:auto; }
+        .cart-content { background:#fff; margin:10% auto; padding:20px; width:85%; border-radius:10px; }
+        input, textarea { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
+        hr { border: 0; border-top: 1px solid #ccc; margin: 15px 0; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <b style="font-size: 22px;">TRIPLE D OUTFITS</b>
+    <b style="font-size: 20px;">TRIPLE D OUTFITS</b>
     <div class="search-box">
-        <input type="text" id="search" onkeyup="searchProduct()" placeholder="Search categories (e.g. Shirts, Shoes)...">
+        <!-- Input yenye datalist ya Suggestions -->
+        <input type="text" id="searchInput" list="categorySuggestions" onkeyup="searchProduct()" placeholder="Tafuta nguo au category...">
+        <datalist id="categorySuggestions"></datalist>
     </div>
 </div>
 
-<!-- SEHEMU YA ADMIN (Siri) -->
-<button class="admin-btn" onclick="toggleAdmin()">Fungua Sehemu ya Admin</button>
-<div id="admin-panel">
-    <h3>Ongeza Bidhaa (Kama Admin)</h3>
+<!-- SEHEMU YA ADMIN LOGIN -->
+<div id="login-box" style="padding: 10px; text-align: center;">
+    <button onclick="showLogin()" style="background:#333; color:white; border:none; padding:5px 10px; border-radius:5px;">Admin Login</button>
+</div>
+
+<div id="admin-panel" class="admin-panel">
+    <h3>Admin: Post Bidhaa Mpya</h3>
     <input type="file" id="fileInput" accept="image/*">
     <input type="text" id="p_jina" placeholder="Jina la Bidhaa">
     <input type="number" id="p_bei" placeholder="Bei (TSh)">
-    <input type="text" id="p_cat" placeholder="Category (Mfano: Shirt)">
-    <textarea id="p_desc" placeholder="Maelezo"></textarea>
-    <button onclick="adminUpload()" style="background: green; color: white; padding: 10px; width: 100%;">Post Bidhaa</button>
+    <input type="text" id="p_cat" placeholder="Category (e.g. Shirt, Viatu)">
+    <textarea id="p_desc" placeholder="Maelezo kamili ya bidhaa..."></textarea>
+    <button id="postBtn" onclick="adminUpload()" style="background:#27ae60; color:white; width:100%; padding:10px; border:none; border-radius:5px;">POST BIDHAA</button>
+    
+    <hr>
+    <!-- Sehemu ya kubadilisha password ndani ya Admin Panel -->
+    <h3>Badilisha Password</h3>
+    <input type="password" id="old_pass" placeholder="Password ya Zamani">
+    <input type="password" id="new_pass" placeholder="Password Mpya">
+    <button onclick="changePass()" style="background:#000; color:white; width:100%; padding:10px; border:none; border-radius:5px;">SAVE PASSWORD MPYA</button>
 </div>
 
-<div class="product-grid" id="products">
-    <!-- Bidhaa zitatokea hapa -->
+<div class="product-grid" id="products">Inapakia bidhaa...</div>
+
+<!-- CART MODAL -->
+<div id="cart-modal">
+    <div class="cart-content">
+        <h3>Your Cart</h3>
+        <div id="cart-list"></div>
+        <hr>
+        <input type="text" id="o_jina" placeholder="Jina lako">
+        <input type="tel" id="o_simu" placeholder="Namba ya simu">
+        <input type="text" id="o_mahali" placeholder="Mahali ulipo">
+        <h4 id="cart-total">Jumla: TSh 0</h4>
+        <button onclick="sendOrder()" style="background:#ff4400; color:white; width:100%; padding:15px; border:none; border-radius:5px;">TUMA ODA SASA</button>
+        <button onclick="closeCart()" style="background:#ddd; width:100%; padding:10px; border:none; margin-top:10px; border-radius:5px;">Funga</button>
+    </div>
+</div>
+
+<div class="bottom-nav">
+    <div onclick="location.reload()"><i class="fa fa-home"></i><br>Home</div>
+    <div onclick="showCart()" style="position:relative"><i class="fa fa-shopping-cart"></i><span id="cCount" style="position:absolute; top:-10px; background:red; color:white; border-radius:50%; padding:2px 6px; font-size:10px;">0</span><br>Cart</div>
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwJ7ITHFJ8N8VM-0v0GGp_ZsaxOjARYOJBQuUlaYN51He4cIBNqRqpgxzGAH_kJ0PY7/exec"; // WEKA LINK YAKO YA GOOGLE HAPA
+    // WEKA URL YAKO MPYA HAPA CHINI
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycby35Rh_tCOqrYaAjnIwvnKRuQ_pkOeTUyuGOH6qImfYwWlloy0E25o3GtEQvNFcUsK4/exec"; 
+    let allProducts = [];
+    let cart = [];
+    let loggedIn = false;
 
-    function toggleAdmin() {
-        var x = document.getElementById("admin-panel");
-        x.style.display = (x.style.display === "none") ? "block" : "none";
-    }
+    window.onload = fetchProducts;
 
-    // Pakia bidhaa toka Google Sheet
     async function fetchProducts() {
-        const response = await fetch(WEB_APP_URL + "?action=getProducts");
-        const data = await response.json();
-        renderProducts(data);
+        const res = await fetch(WEB_APP_URL + "?action=getProducts");
+        allProducts = await res.json();
+        renderProducts(allProducts);
+        
+        // Kutengeneza Suggestions za Categories kwenye Search
+        let categories = [...new Set(allProducts.map(p => p[4]))]; 
+        document.getElementById('categorySuggestions').innerHTML = categories.map(c => `<option value="${c}">`).join('');
     }
 
     function renderProducts(data) {
@@ -65,38 +103,117 @@
             html += `<div class="p-card">
                 <img src="${p[1]}">
                 <div class="p-details">
-                    <div style="font-weight:bold">${p[2]}</div>
-                    <div style="color:#ff4400">TSh ${p[3]}</div>
-                    <div style="font-size:12px; color:gray">${p[4]}</div>
-                    <button onclick="order('${p[2]}', ${p[3]})" style="width:100%; margin-top:5px; background:#ff4400; color:white; border:none; padding:5px; border-radius:3px;">Agiza</button>
+                    <b>${p[2]}</b>
+                    <div class="p-price">TSh ${p[3].toLocaleString()}</div>
+                    <p style="font-size:12px; color:#666;">${p[5]}</p>
+                    ${loggedIn ? 
+                        `<button onclick="deleteProduct('${p[0]}')" style="background:red; color:white; border:none; padding:5px; width:100%;">Futa</button>` : 
+                        `<button onclick="addToCart('${p[2]}', ${p[3]}, '${p[1]}')" style="background:#ff4400; color:white; border:none; padding:8px; width:100%; border-radius:5px;">Agiza</button>`
+                    }
                 </div>
             </div>`;
         });
         document.getElementById('products').innerHTML = html;
     }
 
-    // Admin Upload
+    function showLogin() {
+        let pass = prompt("Ingiza Admin Password:");
+        if (!pass) return;
+        fetch(WEB_APP_URL, {method:'POST', body: JSON.stringify({action:"checkPassword", pass:pass})})
+        .then(res => res.text()).then(status => {
+            if(status === "Valid") { 
+                loggedIn = true; 
+                document.getElementById('login-box').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block'; 
+                renderProducts(allProducts); 
+            } else if (status === "Locked") {
+                alert("Umekosea mara 5. Mfumo umefungwa, jaribu tena baada ya dakika 5.");
+            } else { 
+                alert("Password Sio Sahihi!"); 
+            }
+        });
+    }
+
+    function changePass() {
+        let oldP = document.getElementById('old_pass').value;
+        let newP = document.getElementById('new_pass').value;
+        if (!oldP || !newP) return alert("Tafadhali jaza sehemu zote!");
+        
+        fetch(WEB_APP_URL, {method:'POST', body: JSON.stringify({action:"changePassword", oldPass:oldP, newPass:newP})})
+        .then(res => res.text()).then(status => {
+            if(status === "Changed") { 
+                alert("Password imebadilishwa kikamilifu!"); 
+                document.getElementById('old_pass').value = '';
+                document.getElementById('new_pass').value = '';
+            } else { 
+                alert("Password ya zamani uliyoweka sio sahihi."); 
+            }
+        });
+    }
+
     function adminUpload() {
-        const file = document.getElementById('fileInput').files[0];
-        const reader = new FileReader();
+        let btn = document.getElementById('postBtn');
+        let file = document.getElementById('fileInput').files[0];
+        if(!file) return alert("Chagua picha!");
+        btn.innerHTML = "Inatuma..."; btn.disabled = true;
+        let reader = new FileReader();
         reader.onload = function(e) {
-            const data = {
-                action: "upload",
-                picha: e.target.result.split(',')[1],
-                type: file.type,
-                name: file.name,
-                jina: document.getElementById('p_jina').value,
-                bei: document.getElementById('p_bei').value,
-                category: document.getElementById('p_cat').value,
-                maelezo: document.getElementById('p_desc').value
+            let data = {
+                action: "upload", picha: e.target.result.split(',')[1], type: file.type, name: file.name,
+                jina: document.getElementById('p_jina').value, bei: document.getElementById('p_bei').value,
+                category: document.getElementById('p_cat').value, maelezo: document.getElementById('p_desc').value
             };
-            fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
-            .then(() => { alert("Imepostiwa!"); location.reload(); });
+            fetch(WEB_APP_URL, {method:'POST', body: JSON.stringify(data)})
+            .then(() => { btn.innerHTML = "POSTED ✓"; setTimeout(()=>location.reload(), 1500); });
         };
         reader.readAsDataURL(file);
     }
 
-    window.onload = fetchProducts;
+    function deleteProduct(id) {
+        if(confirm("Futa bidhaa hii?")) {
+            fetch(WEB_APP_URL, {method:'POST', body: JSON.stringify({action:"deleteProduct", id:id})})
+            .then(()=>location.reload());
+        }
+    }
+
+    function addToCart(name, price, img) {
+        cart.push({name, price, img});
+        document.getElementById('cCount').innerText = cart.length;
+        alert("Imeongezwa kwenye Cart!");
+    }
+
+    function showCart() {
+        document.getElementById('cart-modal').style.display='block';
+        let list = document.getElementById('cart-list');
+        let total = 0;
+        list.innerHTML = cart.map((item, index) => {
+            total += item.price;
+            return `<div style="display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:1px solid #eee; padding-bottom:5px;">
+                <div style="display:flex;"><img src="${item.img}" style="width:40px; height:40px; object-fit:cover; margin-right:10px;">
+                <div><b>${item.name}</b><br><span style="color:#ff4400">TSh ${item.price.toLocaleString()}</span></div></div>
+                <button onclick="removeFromCart(${index})" style="border:none; color:red; background:none;">Ondoa</button></div>`;
+        }).join('');
+        document.getElementById('cart-total').innerText = "Jumla: TSh " + total.toLocaleString();
+    }
+
+    function removeFromCart(i) { cart.splice(i, 1); document.getElementById('cCount').innerText = cart.length; showCart(); }
+    function closeCart() { document.getElementById('cart-modal').style.display='none'; }
+
+    function searchProduct() {
+        let val = document.getElementById('searchInput').value.toLowerCase();
+        let filtered = allProducts.filter(p => p[2].toLowerCase().includes(val) || p[4].toLowerCase().includes(val));
+        renderProducts(filtered);
+    }
+
+    function sendOrder() {
+        let order = {
+            action: "submitOrder", jina: document.getElementById('o_jina').value,
+            simu: document.getElementById('o_simu').value, mahali: document.getElementById('o_mahali').value,
+            vitu: cart.map(i => i.name).join(", "), jumla: cart.reduce((a,b)=>a+b.price, 0)
+        };
+        fetch(WEB_APP_URL, {method:'POST', body: JSON.stringify(order)})
+        .then(() => { alert("ASANTE KWA KUWA MTEJA WETU, NA KARIBU TENA TRIPLE D OUTFITS TUKUHUDUMIE"); location.reload(); });
+    }
 </script>
 </body>
 </html>
