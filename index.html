@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triple D Outfits</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Styles za muonekano kama Alibaba */
+        body { font-family: Arial, sans-serif; margin: 0; background: #f4f4f4; }
+        .header { background: #ff4400; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .search-box { padding: 10px; background: white; }
+        .search-box input { width: 90%; padding: 10px; border-radius: 20px; border: 1px solid #ddd; }
+        .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .p-card { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .p-card img { width: 100%; height: 150px; object-fit: cover; }
+        .p-details { padding: 10px; }
+        .admin-btn { background: #333; color: white; padding: 10px; border: none; width: 100%; cursor: pointer; }
+        #admin-panel { display: none; padding: 20px; background: white; border: 2px solid #ff4400; margin: 10px; border-radius: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <b style="font-size: 22px;">TRIPLE D OUTFITS</b>
+    <div class="search-box">
+        <input type="text" id="search" onkeyup="searchProduct()" placeholder="Search categories (e.g. Shirts, Shoes)...">
+    </div>
+</div>
+
+<!-- SEHEMU YA ADMIN (Siri) -->
+<button class="admin-btn" onclick="toggleAdmin()">Fungua Sehemu ya Admin</button>
+<div id="admin-panel">
+    <h3>Ongeza Bidhaa (Kama Admin)</h3>
+    <input type="file" id="fileInput" accept="image/*">
+    <input type="text" id="p_jina" placeholder="Jina la Bidhaa">
+    <input type="number" id="p_bei" placeholder="Bei (TSh)">
+    <input type="text" id="p_cat" placeholder="Category (Mfano: Shirt)">
+    <textarea id="p_desc" placeholder="Maelezo"></textarea>
+    <button onclick="adminUpload()" style="background: green; color: white; padding: 10px; width: 100%;">Post Bidhaa</button>
+</div>
+
+<div class="product-grid" id="products">
+    <!-- Bidhaa zitatokea hapa -->
+</div>
+
+<script>
+    const WEB_APP_URL = "WEKA_WEB_APP_URL_YAKO_HAPA"; // WEKA LINK YAKO YA GOOGLE HAPA
+
+    function toggleAdmin() {
+        var x = document.getElementById("admin-panel");
+        x.style.display = (x.style.display === "none") ? "block" : "none";
+    }
+
+    // Pakia bidhaa toka Google Sheet
+    async function fetchProducts() {
+        const response = await fetch(WEB_APP_URL + "?action=getProducts");
+        const data = await response.json();
+        renderProducts(data);
+    }
+
+    function renderProducts(data) {
+        let html = '';
+        data.forEach(p => {
+            html += `<div class="p-card">
+                <img src="${p[1]}">
+                <div class="p-details">
+                    <div style="font-weight:bold">${p[2]}</div>
+                    <div style="color:#ff4400">TSh ${p[3]}</div>
+                    <div style="font-size:12px; color:gray">${p[4]}</div>
+                    <button onclick="order('${p[2]}', ${p[3]})" style="width:100%; margin-top:5px; background:#ff4400; color:white; border:none; padding:5px; border-radius:3px;">Agiza</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('products').innerHTML = html;
+    }
+
+    // Admin Upload
+    function adminUpload() {
+        const file = document.getElementById('fileInput').files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = {
+                action: "upload",
+                picha: e.target.result.split(',')[1],
+                type: file.type,
+                name: file.name,
+                jina: document.getElementById('p_jina').value,
+                bei: document.getElementById('p_bei').value,
+                category: document.getElementById('p_cat').value,
+                maelezo: document.getElementById('p_desc').value
+            };
+            fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(data) })
+            .then(() => { alert("Imepostiwa!"); location.reload(); });
+        };
+        reader.readAsDataURL(file);
+    }
+
+    window.onload = fetchProducts;
+</script>
+</body>
+</html>
